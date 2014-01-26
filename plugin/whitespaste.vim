@@ -2,7 +2,7 @@ if exists("g:loaded_whitespaste") || &cp
   finish
 endif
 
-let g:loaded_whitespaste = '0.1.0' " version number
+let g:loaded_whitespaste = '0.2.0' " version number
 let s:keepcpo = &cpo
 set cpo&vim
 
@@ -29,12 +29,14 @@ endif
 if !exists('g:whitespaste_linewise_definitions')
   let g:whitespaste_linewise_definitions = {
         \   'top': [
-        \     { 'target_line': 0,       'blank_lines': 0 },
-        \     { 'target_text': '{\s*$', 'blank_lines': 0 },
+        \     { 'target_line': 0,           'blank_lines': 0 },
+        \     { 'target_text': '^\s*}\s*$', 'pasted_text': '{\s*$', 'blank_lines': 1 },
+        \     { 'target_text': '{\s*$',     'blank_lines': 0 },
         \     { 'compress_blank_lines': 1 },
         \   ],
         \   'bottom': [
         \     { 'target_line': -1,          'blank_lines': 0 },
+        \     { 'target_text': '{\s*$',     'pasted_text': '^\s*}\s*$', 'blank_lines': 1 },
         \     { 'target_text': '^\s*}\s*$', 'blank_lines': 0 },
         \     { 'compress_blank_lines': 1 },
         \   ]
@@ -64,8 +66,19 @@ autocmd FileType vim let b:whitespaste_linewise_definitions = {
       \   ]
       \ }
 
-command! WhitespasteBefore call whitespaste#Paste(g:whitespaste_paste_before_command)
-command! WhitespasteAfter  call whitespaste#Paste(g:whitespaste_paste_after_command)
+autocmd FileType html,php,eruby,eco let b:whitespaste_linewise_definitions = {
+      \   'top': [
+      \     { 'target_text': '^\s*<\k\+[^<]*>\s*$', 'blank_lines': 0 },
+      \     { 'target_text': '^\s*</\k\+>\s*$',     'blank_lines': 1 },
+      \   ],
+      \   'bottom': [
+      \     { 'target_text': '^\s*</\k\+>\s*$',     'blank_lines': 0 },
+      \     { 'target_text': '^\s*<\k\+[^<]*>\s*$', 'blank_lines': 1 },
+      \   ]
+      \ }
+
+command! -count WhitespasteBefore call whitespaste#Paste(g:whitespaste_paste_before_command)
+command! -count WhitespasteAfter  call whitespaste#Paste(g:whitespaste_paste_after_command)
 command! -range WhitespasteVisual call whitespaste#Paste(g:whitespaste_paste_visual_command)
 
 nmap <Plug>WhitespasteBefore :WhitespasteBefore<cr>
